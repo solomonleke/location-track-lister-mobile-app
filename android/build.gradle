@@ -4,17 +4,27 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 35
         targetSdkVersion = 35
-        ndkVersion = "27.1.12297006"
+        //ndkVersion = "27.1.12297006"
+        supportLibVersion = "34.0.0"
+        playServicesVersion = "21.0.1"
+        googlePlayServicesVersion = "21.0.1"
+        ndkVersion = "26.1.10909125"
         kotlinVersion = "2.0.21"
+        androidMapsUtilsVersion = "3.9.0"
     }
     repositories {
         google()
         mavenCentral()
+        // ADD THIS
+        maven { url "https://www.jitpack.io" }
+        // ADD THIS
+        maven { url 'https://maven.google.com' }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath 'com.google.gms:google-services:4.3.15'
     }
 }
 
