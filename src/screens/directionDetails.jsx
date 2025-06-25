@@ -400,7 +400,7 @@ const getDistance = async () => {
   //   }
   // }, []);
   useEffect(() => {
-      getPermissions()
+    getPermissions()
     if (Start === true && Origin && Destination) {
       const interval = setInterval(() => {
         getPermissions();

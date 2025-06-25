@@ -1,38 +1,86 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { View, Text, Switch, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View, Text, Switch, ScrollView, StyleSheet, TouchableOpacity, Alert
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ navigation }) {
   const [rememberLogin, setRememberLogin] = useState(true);
   const [useFaceID, setUseFaceID] = useState(false);
-  const [accountRecovery, setAccountRecovery] = useState(true);
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  const SettingItem = ({ title, description, icon, toggle, value, onValueChange, hasArrow }) => (
-    <View style={styles.settingItem}>
-      <View style={styles.iconTitleContainer}>
-        <View style={styles.iconWrapper}>
-          <Icon name={icon} size={20} color="#4F46E5" />
+  const handleLogoutAllDevices = async () => {
+    try {
+      await AsyncStorage.clear();
+      navigation.navigate('GetStared');
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong while logging out.');
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      // Replace with your actual delete API call
+      const res = await fetch('https://your-api.com/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // body: JSON.stringify({ userId: '...' }),
+      });
+
+      if (res.ok) {
+        await AsyncStorage.clear();
+        navigation.navigate('GetStared');
+      } else {
+        const errorData = await res.json();
+        Alert.alert('Failed', errorData.message || 'Account deletion failed.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error. Please try again later.');
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Are you sure?',
+      'This action will permanently delete your account.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Yes, Delete', onPress: deleteAccount, style: 'destructive' },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const SettingItem = ({ title, description, icon, button, toggle, value, onValueChange, hasArrow, onPress }) => (
+    <TouchableOpacity onPress={onPress} disabled={!onPress}>
+      <View style={styles.settingItem}>
+        <View style={styles.iconTitleContainer}>
+          <View style={styles.iconWrapper}>
+            <Icon name={icon} size={20} color="#4F46E5" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.settingTitle}>{title}</Text>
+            {description ? <Text style={styles.settingDescription}>{description}</Text> : null}
+          </View>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.settingTitle}>{title}</Text>
-          {description ? <Text style={styles.settingDescription}>{description}</Text> : null}
-        </View>
+        {toggle ? (
+          <Switch
+            value={value}
+            onValueChange={onValueChange}
+            trackColor={{ false: '#ccc', true: '#4F46E5' }}
+            thumbColor="#fff"
+          />
+        ) : hasArrow ? (
+          <Icon name="chevron-right" size={22} color="#999" />
+        ) : <Icon name="delete" size={22} color="red" />}
       </View>
-      {toggle ? (
-        <Switch
-          value={value}
-          onValueChange={onValueChange}
-          trackColor={{ false: '#ccc', true: '#4F46E5' }}
-          thumbColor="#fff"
-        />
-      ) : hasArrow ? (
-        <Icon name="chevron-right" size={22} color="#999" />
-      ) : null}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -72,17 +120,17 @@ export default function Settings({ navigation }) {
           onValueChange={setUseFaceID}
         />
         <SettingItem
-          title="Account Recovery"
-          icon="refresh-cw"
-          toggle
-          value={accountRecovery}
-          onValueChange={setAccountRecovery}
+          title="Delete my Account"
+          icon="trash"
+          button
+          onPress={handleDeleteAccount}
         />
         <SettingItem
           title="Log Out From All Devices"
           description="Shake your phone to unlock/view your account balances."
           icon="log-out"
           hasArrow
+          onPress={handleLogoutAllDevices}
         />
       </ScrollView>
     </View>

@@ -274,6 +274,40 @@ export const LoginApi = (Payload) => {
       });
   };
 
+export const GoogleLoginApi = (Payload) => {
+    console.log("payload", Payload)
+    let data = JSON.stringify(Payload);
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+  
+      url: `${baseUrl}/api/v1/auth/google-login`,
+  
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+  
+    return axios
+      .request(config)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log("error", error);
+        if (error.response.data.message) {
+          throw new Error(error.response.data.message);
+        } else if (error.response.data) {
+          throw new Error(error.response);
+        } else if (error.request) {
+          throw new Error(error.message);
+        } else {
+          throw new Error(error.message);
+        }
+      });
+  };
+
 
   export const GetUserProfile = (token) => {
 

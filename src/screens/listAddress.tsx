@@ -12,6 +12,7 @@ import {
   Modal,
 	Alert,
   TextInput,KeyboardAvoidingView,
+	SafeAreaView,
 } from 'react-native';
 import { AddressApi, GetAddress, DeleteAddress } from '../Utilities/ApiCalls';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -106,7 +107,7 @@ export default function AddressList({ navigation }) {
       let result = await AddressApi(userToken, Payload);
 			console.log(result);
       if (result.status === 201) {
-        Alert.alert(result.data);
+				handleAddressList();
         }
       }
       catch (e) {
@@ -159,27 +160,22 @@ export default function AddressList({ navigation }) {
     handleAddressList();
   }, []);
 	return (
-		// <ImageBackground
-		// 	source={require('../assets/benz.png')}
-		// 	style={styles.container}
-		// 	resizeMode="cover"
-		// 	blurRadius={2}
-		// >
-		// <View
-		// 	style={styles.container}
-		// >
+		
 		<>
 			{/* Title Row with Back Icon */}
-			{/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginTop:-37, marginBottom: 13 }}>
+		
+			<SafeAreaView style={{flex:1}}>
+				<ImageBackground
+					source={require('../assets/benz.png')}
+					style={styles.container}
+					resizeMode="cover"
+					blurRadius={2}
+				>
+	<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, marginTop:-37, marginBottom: 13 }}>
 				<Text style={styles.title}>ADDRESSES</Text>
-				<Icon name="arrow-back" size={22} color="#000" onPress={() => navigation.goBack()} />
-			</View> */}
-
+				<Icon name="person" size={22} color="#000" />
+			</View>
 			<View  style={[styles.model, { flex: 1 }]}>
-
-
-
-
 				<View style={[styles.summaryBg, { flex: 1 }]}>
 					<View style={styles.summary}>
 						<TouchableOpacity onPress={() => setShowRadios(!showRadios)}>
@@ -289,6 +285,7 @@ export default function AddressList({ navigation }) {
 					justifyContent: 'flex-start',
 					alignItems: 'center',
 				}}>
+					
 					<View style={{
 						width: '90%',
 						height: '45%',
@@ -297,7 +294,7 @@ export default function AddressList({ navigation }) {
 						borderRadius: 20,
 						padding: 10,
 					}}>
-
+<Text style={{color:"#000", textAlign:"center"}}>Create Address</Text>
 						{/* <GooglePlacesAutocomplete
 							placeholder="Search Address"
 							fetchDetails={true}
@@ -406,6 +403,8 @@ export default function AddressList({ navigation }) {
 					</View>
 				</View>
 			</Modal>
+			</ImageBackground>
+			</SafeAreaView>
 		</>
 	);
 }
@@ -415,7 +414,7 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#fff',
-		// paddingTop: '15%',
+		paddingTop: '15%',
 		width,
 		height: BACKDROP_HEIGHT,
 	},

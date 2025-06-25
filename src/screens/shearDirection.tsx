@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, PermissionsAndroid, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback, View } from 'react-native';
+import { Button, PermissionsAndroid, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Animated, Easing, View, Alert } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps';
 import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
@@ -7,7 +7,7 @@ import Geolocation from 'react-native-geolocation-service';
 import DeviceInfo from 'react-native-device-info';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetTextInput, BottomSheetView } from '@gorhom/bottom-sheet';
 import axios from 'axios';
-
+import Icon from 'react-native-vector-icons/Ionicons';
 import { globalStyles} from '../styles/Global';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { GOOGLE_PLACES_API_KEY } from '../Utilities/Config';
@@ -49,6 +49,10 @@ export default function ShearDirection({  route , navigation }) {
 
 
   const [DraggableMarker, setDraggableMarker] = useState(null);
+  const [showInput, setShowInput] = useState(false); // controls input visibility
+  const [calloutRef, setCalloutRef] = useState(null); // callout ref
+  const [searchVisible, setSearchVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(100)).current; // initially off-screen
 
   const [hasPermission, setHasPermission] = useState(null);
   const snapPoints = useMemo(() => ['15%', '25%', "38%", "65%", "100%"], []);
@@ -85,27 +89,30 @@ export default function ShearDirection({  route , navigation }) {
 	};
 
 
-	const takeSnaps = async () => {
-		if (!mapRef.current) return;
+	const toggleSearch = () => {
+    if (searchVisible) {
+      Animated.timing(slideAnim, {
+        toValue: 100, // slide down
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start(() => setSearchVisible(false));
+    } else {
+      setSearchVisible(true);
+      Animated.timing(slideAnim, {
+        toValue: 0, // slide up into view
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    }
+  };
 
-		const snapshot = await mapRef.current.takeSnapshot({
-			width: 300,
-			height: 300,
-			format: 'png',
-			result: 'file',
-		});
-
-		const filePath = snapshot; // already a file path
-
-		try {
-			await Share.open({
-				url: 'file://' + filePath,
-				title: 'Share snapshot',
-			});
-		} catch (error) {
-			console.error("Share error", error);
-		}
-	};
+  useEffect(() => {
+    if (calloutRef) {
+      calloutRef.showCallout(); // show callout automatically
+    }
+  }, [calloutRef]);
 
 	const deviceId = DeviceInfo.getDeviceId();
 	const appVersion = DeviceInfo.getVersion();
@@ -409,7 +416,7 @@ export default function ShearDirection({  route , navigation }) {
 
       console.log("SendAddressAPI", result)
       if(result.status === 201){
-        alert("Address Shared Successfully")
+        Alert.alert("Address Shared Successfully")
         UpdateAdrino()
       }
     }catch(e){
@@ -451,25 +458,42 @@ export default function ShearDirection({  route , navigation }) {
             customMapStyle={mapJson}
           >
 
-            {
-              DraggableMarker !== null && (
+            {DraggableMarker && (
+              <Marker
+                coordinate={DraggableMarker}
+                draggable
+                onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}
+                ref={(ref) => {
+                  if (ref && !calloutRef) setCalloutRef(ref);
+                }}
+              >
+                {/* <Callout tooltip>
+                  {showInput ? (
+                    <View style={styles.calloutContainer}>
+                      <TouchableOpacity onPress={() => setShowInput(false)} style={styles.iconLeft}>
+                        <Text style={styles.iconText}>✖️</Text>
+                      </TouchableOpacity>
 
-                <Marker
+                      <TextInput
+                        placeholder="Enter address"
+                        value={Address}
+                        onChangeText={setAddress}
+                        style={styles.input}
+                      />
 
-                  draggable
-                  coordinate={DraggableMarker}
-                  // pinColor='#000fff'
-                  onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}
+                      <TouchableOpacity onPress={ShareAddress} style={styles.iconRight}>
+                        <Text style={styles.iconText}>📤</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity style={styles.button} onPress={() => setShowInput(true)}>
+                      <Text style={{ color: 'white' }}>Shear Address</Text>
+                    </TouchableOpacity>
+                  )}
+                </Callout> */}
+              </Marker>
+            )}
 
-                >
-                  {/* <Callout tooltip={true} style={{ backgroundColor: "#fff", padding: 20 }}>
-                <Text>Current location</Text>
-                <Button onPress={takeSnaps} title='Take Snap short ' />
-
-              </Callout> */}
-                </Marker>
-              )
-            }
           </MapView>
                <View style={styles.statusTag}>
                 <TextInput
@@ -493,6 +517,7 @@ export default function ShearDirection({  route , navigation }) {
                       setPredictions([]);
                     }
                   }}
+                  placeholderTextColor="#fff"
                   placeholder="Search location"
                   style={{
                     borderColor: '#ddd',
@@ -501,8 +526,8 @@ export default function ShearDirection({  route , navigation }) {
                     paddingHorizontal: 10,
                     height: 40,
                     width:280,
-                    color: '#333',
-                    backgroundColor: '#fff'
+                    color: '#fff',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
                   }}
                 />
 
@@ -559,9 +584,71 @@ export default function ShearDirection({  route , navigation }) {
                     keyboardShouldPersistTaps="handled"
                   />
                 )}
-
+                 {
+                DraggableMarker && (
+                  <TouchableOpacity onPress={toggleSearch} style={{
+                    position: 'absolute',
+                    left: -50,
+                    bottom: -100,
+                    alignItems:"center",
+                    alignSelf:"center",
+                    alignContent:"center",
+                    backgroundColor: '#622cfc',
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderRadius: 10,
+                    zIndex: 9999
+                  }}>
+                    <Text style={{ color: 'white' }}>Shear address 🔍</Text>
+                  </TouchableOpacity>
+                )}
                 </View>
-          <BottomSheet
+
+                {searchVisible && (
+            <Animated.View style={{
+              position: 'absolute',
+              bottom: slideAnim.interpolate({
+                inputRange: [0, 100],
+                outputRange: ['50%', '-100%']
+              }),
+              alignSelf: 'center',
+              width: '90%',
+              //backgroundColor: 'rgba(255,255,255,0.8)',
+              borderRadius: 10,
+              padding: 10,
+              zIndex: 9999,
+            }}>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderColor: '#ccc',
+                borderWidth: 1,
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                backgroundColor: 'white',
+              }}>
+                <TextInput
+                  placeholder="Enter Guest Email Address.."
+                  keyboardType='email-address'
+                  returnKeyType='next'
+                  value={Email}
+                  onChangeText={(val) => setEmail(val)}
+                  placeholderTextColor="gray"
+                  style={{
+                    flex: 1,
+                    color: '#000',
+                    paddingVertical: 8,
+                  }}
+                />
+                <TouchableOpacity onPress={ShareAddress}>
+                  {Loading ?  <Text style={{color:'blue'}}>shearin.....</Text> :  <Icon name="send-outline" size={22} color="#555" />}
+                 
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* <BottomSheet
             snapPoints={snapPoints}
             index={0}
             ref={bottomSheetRef}
@@ -604,58 +691,9 @@ export default function ShearDirection({  route , navigation }) {
                   </>
                 )
               }
-                {/* <GooglePlacesAutocomplete
-                  fetchDetails={true}
-                  placeholder='Search Location'
-                  onPress={(data, details = null) => {
-											if (!details || !details.geometry || !details.geometry.location) {
-												console.warn("Missing location details", details);
-												return;
-											}
-
-											const { lat, lng } = details.geometry.location;
-
-											console.log("autolocation", JSON.stringify(details.geometry.location));
-											console.log("DETAILS", JSON.stringify(details.formatted_address));
-
-											setAddress(details.formatted_address);
-											moveToLocationX(lat, lng);
-											setDraggableMarker({
-												latitude: lat,
-												longitude: lng,
-											});
-
-											snapToIndex(0);
-										}}
-
-                  query={{
-                    key: GOOGLE_PLACES_API_KEY,
-                    language: 'en',
-                  }}
-
-                  onFail={(error) => {
-										console.error("GooglePlacesAutocomplete failed:", error);
-									}}
-
-                  styles={{
-                    textInputContainer: {
-                      borderColor: '#ddd',
-                      borderWidth: 1,
-                      borderRadius: 8
-                    },
-                    textInput: {
-                      height: 38,
-                      color: '#5d5d5d',
-                      fontSize: 16,
-                    },
-                    predefinedPlacesDescription: {
-                      color: '#1faadb',
-                    },
-                  }}
-                /> */}
               </View>
             </BottomSheetView>
-          </BottomSheet>
+          </BottomSheet> */}
 
         </>
       </TouchableOpacity>
@@ -702,7 +740,46 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20
   },
-    statusTag: {
+  button: {
+		backgroundColor: '#36454F',
+		borderRadius: 10,
+		paddingVertical: 10,
+	
+		paddingHorizontal: 20,
+		width: '100%',
+	},
+  calloutContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'white',
+  borderRadius: 10,
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+  minWidth: 250,
+},
+
+input: {
+  flex: 1,
+  height: 40,
+  paddingHorizontal: 10,
+  borderRadius: 5,
+  backgroundColor: '#f0f0f0',
+  marginHorizontal: 5,
+},
+
+iconLeft: {
+  padding: 5,
+},
+
+iconRight: {
+  padding: 5,
+},
+
+iconText: {
+  fontSize: 18,
+},
+
+  statusTag: {
     zIndex: 9999,
     position: 'absolute',
     top: 30,

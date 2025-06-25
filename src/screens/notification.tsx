@@ -92,9 +92,11 @@ const ICONS = [
 ];
 
 const COLORS = [
-  '#FF7043', '#42A5F5', '#66BB6A', '#FFA726',
-  '#AB47BC', '#29B6F6', '#EC407A', '#26C6DA',
-  '#8D6E63', '#78909C', '#7E57C2', '#4DB6AC'
+  // '#FF7043', 
+  '#42A5F5', 
+  // '#66BB6A', '#FFA726',
+  // '#AB47BC', '#29B6F6', '#EC407A', '#26C6DA',
+  // '#8D6E63', '#78909C', '#7E57C2', '#4DB6AC'
 ];
 
 function getRandomItem(array) {
@@ -151,7 +153,10 @@ const GetNotification = async () => {
   })}>
      {/* onPress={() => openModal(item)} */}
       <View style={[styles.avatar, { backgroundColor: item.color }]}>
-        <Icon name={item.icon} size={24} color="#fff" />
+        {/* <Icon name={item.icon} size={24} color="#fff" /> */}
+         <Text style={styles.avatarLetter}>
+        {item.from?.username?.charAt(0)?.toUpperCase() || '?'}
+      </Text>
       </View>
       <View style={styles.textContainer}>
         <View style={styles.row}>
@@ -229,6 +234,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  avatarLetter: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: 'bold',
+},
   profile: {
     width: 32,
     height: 32,

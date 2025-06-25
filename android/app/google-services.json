@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "771249442849",
+    "project_id": "ezgps-a0c5d",
+    "storage_bucket": "ezgps-a0c5d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771249442849:android:51d4118e97faf759d81360",
+        "android_client_info": {
+          "package_name": "com.ezypgps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfLtMsAIaBmZ9DCpV9uzW1mX6z6OTwQOw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

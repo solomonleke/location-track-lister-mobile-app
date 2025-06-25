@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -23,10 +23,11 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
-import { AppleLogo } from 'phosphor-react-native';
+import { AppleLogo, LockKeyOpen, LockKey, LockOpen, Lock, Eye, EyeSlash} from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LoginApi } from '../Utilities/ApiCalls';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,12 +37,14 @@ export default function UsernameScreen({ navigation }) {
 	}, [navigation]);
   const scaleFont = (size) => size * (width / 375); // scale to iPhone 11 width baseline
 
-  const [username, setUsername] = useState('francisdaniel140@gmail.com');
-  const [password, setPassword] = useState('francis1@male');
-  //const [username, setUsername] = useState('');
-  //const [password, setPassword] = useState('');
+  //const [username, setUsername] = useState('francisdaniel140@gmail.com');
+  //const [password, setPassword] = useState('francis1@male');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [step, setStep] = useState('username');
   const [Loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   // const navigation = useNavigation();
 
   const usernameOffset = useSharedValue(0);
@@ -63,6 +66,7 @@ export default function UsernameScreen({ navigation }) {
 
 
   const handleContinue = async () => {
+    const fcmtoken = await AsyncStorage.getItem('FCMToken');
     if (step === 'username') {
       // const valid = /^[a-zA-Z0-9]{3,15}$/.test(username);
       // if (!valid) {
@@ -85,7 +89,8 @@ export default function UsernameScreen({ navigation }) {
       try {
         let result = await LoginApi({
             email: username,
-            password: password, 
+            password: password,
+            deviceId: fcmtoken,
         })
         if (result.data.status === 200) {
           setLoading(false)
@@ -104,19 +109,21 @@ export default function UsernameScreen({ navigation }) {
     }
   };
 
+
   return (
     <>
     <SafeAreaView style={{flex:1}}>
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      //keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // adjust if needed
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // adjust if needed
     >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
           <LinearGradient colors={['#f0fff0', '#d3fcd5']} style={styles.container}>
+           
             <Animated.View entering={FadeInUp.duration(800)} style={styles.avatarContainer}>
               <Image source={require('../assets/user1.png')} style={styles.centerAvatar} />
             </Animated.View>
@@ -147,23 +154,37 @@ export default function UsernameScreen({ navigation }) {
                 </Animated.View>
 
                 <Animated.View style={[styles.inputSection, passwordAnimStyle]}>
-                  <Text style={styles.inputLabel}>Password</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="••••••••"
-                      placeholderTextColor="#aaa"
-                      secureTextEntry
-                      value={password}
-                      onChangeText={setPassword} />
-                  </View>
-                  <Text style={styles.note}>Must be at least 6 characters.</Text>
-                </Animated.View>
+                <Text style={styles.inputLabel}>Password</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    placeholder="••••••••"
+                    placeholderTextColor="#aaa"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                  <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
+                    {showPassword ? (
+                      <Eye size={22} color="#666" />
+                    ) : (
+                      <EyeSlash size={22} color="#666" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.forgotContainer}>
+                  <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                    <Text style={styles.forgotText}>Forgot Password?</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.note}>Must be at least 6 characters.</Text>
+              </Animated.View>
+
               </View>
 
               {/* Buttons stay fixed below */}
               <TouchableOpacity style={styles.button} onPress={handleContinue} disabled={Loading}>
-                <AppleLogo size={24} weight="bold" color="#fff" />
+                <LockKeyOpen size={24} weight="bold" color="#fff" />
                 <Text style={styles.buttonText}>
                   {step === 'username' ? 'Next' : 'Continue'}
                 </Text>
@@ -194,6 +215,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
+    paddingVertical:"30%"
   },
   avatarContainer: {
     alignItems: 'center',
@@ -207,9 +229,29 @@ const styles = StyleSheet.create({
 	content: {
 		width: '90%',
 		alignItems: 'center',
-		top: -40,
-		paddingBottom: 100, // Add this line
+		// top: -40,
+		// paddingBottom: 100,
 	},
+inputContainer: {
+  backgroundColor: '#f0f0f0',
+  borderRadius: 15,
+  paddingHorizontal: 15,
+  paddingVertical: 5,
+  width: '100%',
+  marginBottom: 5,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+},
+forgotContainer: {
+  alignSelf: 'flex-end',
+  marginTop: 5,
+},
+forgotText: {
+  color: '#36454F',
+  fontSize: 12,
+  fontWeight: '500',
+},
 
   title: {
     fontSize: 20,
@@ -222,14 +264,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  inputContainer: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 15,
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    width: '100%',
-    marginBottom: 5,
-  },
+  // inputContainer: {
+  //   backgroundColor: '#f0f0f0',
+  //   borderRadius: 15,
+  //   paddingHorizontal: 15,
+  //   paddingVertical: 5,
+  //   width: '100%',
+  //   marginBottom: 5,
+  // },
 
 	inputSection: {
 		position: 'absolute', // <-- Important
@@ -276,7 +318,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
-		marginTop:-50,
+		marginTop:-40,
   },
 
   buttonText: {
