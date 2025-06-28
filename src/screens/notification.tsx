@@ -130,7 +130,7 @@ const GetNotification = async () => {
     let result = await GetNotificationAPI(userToken);
 
     if (result.status === 200) {
-      const updatedData = result.data.map((item, index) => ({
+      const updatedData = result.data.filter(item => item.from).map((item, index) => ({
         ...item,
         icon: item.icon || getRandomItem(ICONS),
         color: item.color || getRandomItem(COLORS),
@@ -160,7 +160,7 @@ const GetNotification = async () => {
       </View>
       <View style={styles.textContainer}>
         <View style={styles.row}>
-          <Text style={styles.sender}>{item.from.username}</Text>
+          <Text style={styles.sender}>{item.from?.username || 'Unknown Sender'}</Text>
           <Text style={styles.time}>{item.time}</Text>
         </View>
         <Text style={styles.title}>{`${item.details.address.addressLine}`}</Text>

@@ -23,6 +23,7 @@ import ShearDirection from '../screens/shearDirection';
 import Directions from '../screens/directionDetails';
 import SignupScreen from '../screens/signup';
 import VerifyEmail from '../screens/emailOtp';
+import UpdateProfileInfo from '../screens/userProfileInfo';
 
 const Stack = createNativeStackNavigator();
 
@@ -96,7 +97,9 @@ export default function Routes() {
       <Stack.Screen name="Main" component={TabNavigator} />
       <Stack.Screen name="Directions" component={Directions} />
       <Stack.Screen name="login" component={UsernameScreen} />
-     <Stack.Screen name="otp" component={VerifyEmail} />
+      <Stack.Screen name="otp" component={VerifyEmail} />
+
+      <Stack.Screen name="updateinfo" component={UpdateProfileInfo} />
       <Stack.Screen name="signup" component={SignupScreen} />
       <Stack.Screen name="GetStared" component={GetStarted} />
       <Stack.Screen  name="TrackList" component={TrackList} />

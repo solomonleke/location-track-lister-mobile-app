@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ navigation }) {
   const [rememberLogin, setRememberLogin] = useState(true);
-  const [useFaceID, setUseFaceID] = useState(false);
+  const [useFaceID, setUseFaceID] = useState(true);
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -92,18 +92,18 @@ export default function Settings({ navigation }) {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <SettingItem
-          title="Enable Pin Code"
-          description="Shake your phone to unlock/view your account balances."
+          title="Change Password"
+          description="Change your phone passcode unlock/view your account detils."
           icon="lock"
-          toggle
-          value={false}
+          hasArrow
           onValueChange={() => {}}
         />
         <SettingItem
-          title="Biometric Login"
+          title="Account Update info"
           description="Shake your phone to unlock/view your account balances."
           icon="shield"
           hasArrow
+          onPress={()=>navigation.navigate("updateinfo")}
         />
         <SettingItem
           title="Remember Login"
@@ -113,7 +113,7 @@ export default function Settings({ navigation }) {
           onValueChange={setRememberLogin}
         />
         <SettingItem
-          title="Use FaceID"
+          title="Google Auth Login"
           icon="smile"
           toggle
           value={useFaceID}

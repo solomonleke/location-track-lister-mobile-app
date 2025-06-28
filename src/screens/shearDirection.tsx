@@ -384,7 +384,6 @@ export default function ShearDirection({  route , navigation }) {
           long: DraggableMarker.longitude,
         }
       })
-
       console.log(result)
       if(result.data.status === 200){
         alert("Arduino Address Updated Successfully")

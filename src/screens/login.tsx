@@ -25,7 +25,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AppleLogo, LockKeyOpen, LockKey, LockOpen, Lock, Eye, EyeSlash} from 'phosphor-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { LoginApi } from '../Utilities/ApiCalls';
+import { LoginApi, ForgotPassword} from '../Utilities/ApiCalls';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -39,11 +39,17 @@ export default function UsernameScreen({ navigation }) {
 
   //const [username, setUsername] = useState('francisdaniel140@gmail.com');
   //const [password, setPassword] = useState('francis1@male');
+
+  //const [username, setUsername] = useState('lordsoliz@gmail.com');
+  //const [password, setPassword] = useState('Billgate712');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [step, setStep] = useState('username');
   const [Loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotInput, setShowForgotInput] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [sendingForgot, setSendingForgot] = useState(false);
 
   // const navigation = useNavigation();
 
@@ -109,6 +115,29 @@ export default function UsernameScreen({ navigation }) {
     }
   };
 
+  const handleForget = async () => {
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+    if (isEmail && !sendingForgot) {
+      setSendingForgot(true);
+      try {
+        let data = await LoginApi({
+          email: forgotEmail,
+        })
+
+        if (data.status === 200 || data.success) {
+          Alert.alert('Success', 'Check your email for an OTP code');
+          navigation.navigate('OtpVerify', { name: 'forgot-password', email: text });
+          setShowForgotInput(false);
+        } else {
+          Alert.alert('Error', data.message || 'Something went wrong');
+        }
+      } catch (err) {
+        Alert.alert('Error', 'Failed to send email. Try again.');
+      } finally {
+        setSendingForgot(false);
+        }
+    }
+  };
 
   return (
     <>
@@ -173,7 +202,7 @@ export default function UsernameScreen({ navigation }) {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.forgotContainer}>
-                  <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                  <TouchableOpacity onPress={() => setShowForgotInput(true)}>
                     <Text style={styles.forgotText}>Forgot Password?</Text>
                   </TouchableOpacity>
                 </View>
@@ -204,6 +233,84 @@ export default function UsernameScreen({ navigation }) {
                 <Text style={styles.cancel}>Cancel</Text>
               </TouchableOpacity>
             </Animated.View>
+
+            {showForgotInput && (
+            <Animated.View
+              entering={FadeInUp}
+              style={{
+                position: 'absolute',
+                top: 200,
+                width: '90%',
+                alignSelf: 'center',
+                backgroundColor: '#fff',
+                borderRadius: 10,
+                padding: 12,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 6,
+                elevation: 4,
+                zIndex: 1000,
+              }}>
+              <View style={{ position: 'relative' }}>
+                <TextInput
+                  style={{
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: 10,
+                    paddingHorizontal: 15,
+                    height: 48,
+                    paddingRight: 45, // space for icon
+                    color: '#000'
+                  }}
+                  placeholder="Enter your email address"
+                  placeholderTextColor="#999"
+                  value={forgotEmail}
+                  onChangeText={async (text) => {
+                    setForgotEmail(text);
+
+                    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+                    if (isEmail && !sendingForgot) {
+                      setSendingForgot(true);
+                      try {
+                        const result = await ForgotPassword({ email: text }); // ✅ call actual API function
+
+                        if (result?.status === 200 || result?.data?.status === 200) {
+                          Alert.alert('Success', 'OTP has been sent to your email');
+                          setShowForgotInput(false);
+                          navigation.navigate('OtpVerify', {
+                            name: 'forgot-password',
+                            email: text,
+                          });
+                        } else {
+                          Alert.alert('Error', result?.data?.message || 'Something went wrong');
+                        }
+                      } catch (err) {
+                        Alert.alert('Error', 'Could not send OTP. Please try again.');
+                      } finally {
+                        setSendingForgot(false);
+                      }
+                    }
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowForgotInput(false)}
+                  style={{
+                    position: 'absolute',
+                    right: 10,
+                    top: 12,
+                    height: 24,
+                    width: 24,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text style={{ fontSize: 18, color: '#36454F' }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          )}
+
           </LinearGradient>
         </ScrollView>
     </KeyboardAvoidingView>

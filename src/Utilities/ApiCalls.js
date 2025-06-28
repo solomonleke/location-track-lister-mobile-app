@@ -36,7 +36,39 @@ export const GoogleAuth = (Payload) => {
         }
       });
   };
-
+export const ForgotPassword = (Payload) => {
+    console.log("payload", Payload)
+    let data = JSON.stringify(Payload);
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+  
+      url: `${baseUrl}/api/v1/user/forgot-password`,
+  
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+  
+    return axios
+      .request(config)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log("error", error);
+        if (error.response.data.message) {
+          throw new Error(error.response.data.message);
+        } else if (error.response.data) {
+          throw new Error(error.response);
+        } else if (error.request) {
+          throw new Error(error.message);
+        } else {
+          throw new Error(error.message);
+        }
+      });
+  };
 export const VerifyOTPApi = (Payload) => {
     console.log("payload", Payload)
     let data = JSON.stringify(Payload);
@@ -170,7 +202,7 @@ export const GetAddress = (token) => {
         }
       });
   };
-  export const DeleteAddress = (id, token) => {
+export const DeleteAddress = (id, token) => {
 
     let config = {
       method: "DELETE",
@@ -203,7 +235,7 @@ export const GetAddress = (token) => {
           throw new Error(error.message);
         }
       });
-  };
+};
 
 
 export const AddressApi = (token, Payload) => {
@@ -417,25 +449,20 @@ export const UpdateProfileImgAPI = (token, image) => {
         }
       });
   };
-
-  
-  
-  export const StartTripApi = (token, Payload) => {
+export const StartTripApi = (token, Payload) => {
     let data = JSON.stringify(Payload);
+
+    console.log(data, "dattttta")
 
     let config = {
       method: "POST",
       maxBodyLength: Infinity,
-  
       url: `${baseUrl}/api/v1/trip/create`,
-
       headers: {
         "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
       },
-      data: data,
-
-    
+      data: data,    
     };
   
     return axios
@@ -457,7 +484,7 @@ export const UpdateProfileImgAPI = (token, image) => {
       });
   };
  
-  export const TriggerAdrinoApi = (token, Payload) => {
+export const TriggerAdrinoApi = (token, Payload) => {
     let data = JSON.stringify(Payload);
 
     let config = {

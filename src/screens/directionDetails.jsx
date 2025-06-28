@@ -13,12 +13,6 @@ import { GetDistanceGoogleAPI, StartTripApi, TriggerAdrinoApi, UpdateProfileAPI 
 
 export default function Directions({route}) {
   const { lat, lng } = route.params;
-  const [Search, setSearch] = useState("");
-  const [Index, setIndex] = useState(0);
-  const [MaxPoint, setMaxPoint] = useState('38%');
-  const [KeyBoardStatus, setKeyBoardStatus] = useState(false);
-
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(null);
   const [Start, setStart] = useState(false);
   const [Trigger, setTrigger] = useState(false);
   const [JourneyDetails, setJourneyDetails] = useState({});
@@ -33,13 +27,13 @@ export default function Directions({route}) {
 
   const navigate = useNavigation()
 
-  console.log(JourneyDetails, 'JourneyDetails', Origin, 'Origin', Destination, 'Destination' )
-  console.log(lat, lng, 'l and l')
+
+ 
   const bottomSheetRef = useRef(null);
 
   const snapToIndex = (index) => bottomSheetRef.current.snapToIndex(index)
   const OpenBottom = () => bottomSheetRef.current.expand()
-
+   
   const snapPoints = useMemo(() => ['15%', '25%', "38", "65%", "100%"], []);
 
   const mapRef = useRef()
@@ -79,7 +73,6 @@ const getAddressFromCoords = async (latitude, longitude) => {
     return null;
   }
 };
-
 const getUserLocation = async () => {
   setLoading(true);
   try {
@@ -87,12 +80,18 @@ const getUserLocation = async () => {
       async (position) => {
         const { latitude, longitude } = position.coords;
         moveToLocationX(latitude, longitude);
-
         const originAddress = await getAddressFromCoords(latitude, longitude);
-        const destAddress = await getAddressFromCoords(lat, lng); // from route.params
+        const destAddress = await getAddressFromCoords(lat, lng);
 
-        setOrigin({ latitude, longitude, address: originAddress });
-        setDestination({ latitude: lat, longitude: lng, address: destAddress });
+        const newOrigin = { latitude, longitude, address: originAddress };
+        const newDest = { latitude: lat, longitude: lng, address: destAddress };
+
+        // Avoid unnecessary state updates
+        const isSameOrigin = JSON.stringify(Origin) === JSON.stringify(newOrigin);
+        const isSameDest = JSON.stringify(Destination) === JSON.stringify(newDest);
+
+        if (!isSameOrigin) setOrigin(newOrigin);
+        if (!isSameDest) setDestination(newDest);
 
         setLoading(false);
       },
@@ -106,7 +105,7 @@ const getUserLocation = async () => {
         timeout: 15000,
         maximumAge: 10000,
         forceRequestLocation: true,
-        showLocationDialog: true
+        showLocationDialog: true,
       }
     );
   } catch (err) {
@@ -115,10 +114,7 @@ const getUserLocation = async () => {
   }
 };
 
-
-
-  const moveToLocationX = async (latitude, longitude) => {
-
+const moveToLocationX = async (latitude, longitude) => {
     mapRef.current.animateToRegion({
       latitude,
       longitude,
@@ -126,14 +122,11 @@ const getUserLocation = async () => {
       longitudeDelta: 0.01123
     },
       2000)
-
   }
-
   const onRegionChange = (region) => {
     // console.log("region", region)
     // OpenBottom()
   }
-
   const renderBackdrop = useCallback(
     (props) => (
       <BottomSheetBackdrop
@@ -144,7 +137,6 @@ const getUserLocation = async () => {
     ),
     []
   );
-
   const mapJson = [
     {
       "elementType": "geometry",
@@ -360,9 +352,9 @@ const getUserLocation = async () => {
       ]
     }
   ]
-
 const getDistance = async () => {
   try {
+    console.log(Destination , "Origin pat", Origin);
     if (!Origin || !Destination) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -374,10 +366,9 @@ const getDistance = async () => {
       origin: `${Origin.latitude}, ${Origin.longitude}`,
       destination: `${Destination.address}`
     });
-
-    console.log("getDistance", result.data);
-
+    console.log("getDistance pat", result);
     if (result.status === 200 && result.data) {
+      console.log(".data pat", result.data);
       setJourneyDetails(result.data);
       setStart(true);
     } else {
@@ -387,18 +378,6 @@ const getDistance = async () => {
     console.error("Error in getDistance", e);
   }
 };
-
-  // useEffect(() => {
-  //   if( Start === true){
-  //     const interval = setInterval(() => {
-  //       getPermissions()
-  //       getDistance()
-  //       setTimeout(() => {
-  //       }, 2000);
-  //     }, 4000);
-  //     return () => clearInterval(interval)
-  //   }
-  // }, []);
   useEffect(() => {
     getPermissions()
     if (Start === true && Origin && Destination) {
@@ -410,63 +389,51 @@ const getDistance = async () => {
     }
 }, [Start, Origin, Destination]);
 
-
-  const StartTrip = async () => {
-    setLoading(true)
-    try {
-			const userToken = await AsyncStorage.getItem('accessToken');
-      let result = await StartTripApi(userToken, {
-        destinationCoordinates: {
-          lat: Destination.latitude,
-          long: Destination.longitude,
-        }
-      })
-      console.log("Create Trip", result)
-      console.log(result)
-      if (result.status === 201) {
-        getDistance()
-        // alert("Your Trip has Started Successfully")
-        setLoading(false)
-      }
-
-    } catch (e) {
-      console.log(e)
-      alert(e.message)
+ const StartTrip = async () => {
+  setLoading(true);
+  try {
+    const userToken = await AsyncStorage.getItem('accessToken');
+    let result = await StartTripApi(userToken, {
+      destinationCoordinates: {
+        lat: Destination.latitude,
+        long: Destination.longitude,
+      },
+    });
+    console.log(result.data, 'jk', result.status, "result........................................")
+    if (result.status === 201) {
+      getDistance(); // This can take time and call setStart again
     }
+  } catch (e) {
+    console.log(e);
+    alert(e.message);
+  } finally {
+    setLoading(false); // Always turn off loading
   }
-  const LightTheBulb = async () => {
+};
 
-   
+  const LightTheBulb = async () => {
     setLoading(true)
     try {
 			const userToken = await AsyncStorage.getItem('accessToken');
       let result = await TriggerAdrinoApi(userToken, {
         updateReason: "trigger arduino"
       })
-
-
       console.log("LightTheBulb", result)
-
       console.log(result)
       if (result.status === 200) {
         setTrigger(true)
         alert("LED has been Triggered. Kindly end trip when you've confirm your destination")
-
         setLoading(false)
       }
-
     } catch (e) {
       console.log(e)
       alert(e.message)
     }
   }
   const EndTrip = async () => {
-
-   
     setLoading(true)
 		const userToken = await AsyncStorage.getItem('accessToken');
     try {
-
       let result = await TriggerAdrinoApi(userToken, {
         updateReason: "end trip"
       })
@@ -475,10 +442,8 @@ const getDistance = async () => {
         setTrigger(false)
         setStart(false)
         alert("You have ended the Trip. Thank you")
-
         setLoading(false)
       }
-
     } catch (e) {
       console.log(e)
       alert(e.message)
@@ -487,13 +452,10 @@ const getDistance = async () => {
 
 
   return (
-
-
     <View
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.mapContainer}>
-
-      <TouchableOpacity onPress={OpenBottom} >
+      <View>
         {/* provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT} */}
         <>
           <MapView
@@ -506,44 +468,24 @@ const getDistance = async () => {
               longitude: 8.6,
               latitudeDelta: 20.01124,
               longitudeDelta: 20.01123
-
             }}
-            customMapStyle={mapJson}
-
-          >
-
-
-            {
-              Origin !== null && (
-
+            customMapStyle={mapJson}>
+            {Origin !== null && (
                 <Marker
                   onPress={OpenBottom}
                   coordinate={Origin}
-                  onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}
-
-                >
+                  onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}>
                 </Marker>
-              )
-            }
-
-            {
-              Destination !== null && (
-
+              )}
+            { Destination !== null && (
                 <Marker
                   onPress={OpenBottom}
                   coordinate={Destination}
                   pinColor='#000fff'
-                  onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}
-
-                >
-
+                  onDragEnd={(e) => setDraggableMarker(e.nativeEvent.coordinate)}>
                 </Marker>
-              )
-            }
-
-
-            {
-              Origin !== undefined && Destination !== undefined ?
+              )}
+            { Origin !== undefined && Destination !== undefined ?
                 <MapViewDirections
                   origin={Origin}
                   destination={Destination}
@@ -551,12 +493,8 @@ const getDistance = async () => {
                   strokeColor="#880ED4"
                   strokeWidth={5}
                   onFail={error => console.log(error)}
-
-
                 /> : null
             }
-
-
           </MapView>
           <BottomSheet
             snapPoints={snapPoints}
@@ -574,137 +512,39 @@ const getDistance = async () => {
               } else {
                 setIsOpen(true);
               }
-            }}
-
-          >
+            }}>
             <BottomSheetView style={styles.contentContainer}>
             <TouchableOpacity onPress={getPermissions}>
               <Text>Use Current Location</Text>
             </TouchableOpacity>
-
               <View style={{ flexDirection: "row", flex: 0.5, justifyContent: "space-between" }}>
                 <View style={{ width: "48%" }}>
-                  {/* <GooglePlacesAutocomplete
-                    fetchDetails={true}
-                    placeholder='Search Origin'
-                    onPress={(data, details = null) => {
-
-
-
-                      moveToLocationX(details.geometry.location.lat, details.geometry.location.lng)
-                      setOrigin(
-                        {
-                          latitude: details.geometry.location.lat,
-                          longitude: details.geometry.location.lng,
-                          address: details.formatted_address
-                        }
-                      )
-
-                      snapToIndex(0)
-                    }}
-                    query={{
-                      key: GOOGLE_PLACES_API_KEY,
-                      language: 'en',
-                    }}
-
-                    onFail={error => console.log(error)}
-                    styles={{
-                      textInputContainer: {
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        borderRadius: 8
-                      },
-                      textInput: {
-                        height: 38,
-                        color: '#5d5d5d',
-                        fontSize: 16,
-                      },
-                      predefinedPlacesDescription: {
-                        color: '#1faadb',
-                      },
-                    }}
-                  /> */}
                 </View>
                 <View style={{ width: "48%" }}>
-                  {/* <GooglePlacesAutocomplete
-                    fetchDetails={true}
-                    placeholder='Search Destination'
-                    onPress={(data, details = null) => {
-
-                      console.log("autolocation", JSON.stringify(details.formatted_address));
-
-                      moveToLocationX(details.geometry.location.lat, details.geometry.location.lng)
-                      setDestination(
-                        {
-                          latitude: details.geometry.location.lat,
-                          longitude: details.geometry.location.lng,
-                          address: details.formatted_address
-                        }
-                      )
-
-                      snapToIndex(0)
-                    }}
-                    query={{
-                      key: GOOGLE_PLACES_API_KEY,
-                      language: 'en',
-                    }}
-
-                    onFail={error => console.log(error)}
-                    styles={{
-                      textInputContainer: {
-                        borderColor: '#ddd',
-                        borderWidth: 1,
-                        borderRadius: 8
-                      },
-                      textInput: {
-                        height: 38,
-                        color: '#5d5d5d',
-                        fontSize: 16,
-                      },
-                      predefinedPlacesDescription: {
-                        color: '#1faadb',
-                      },
-                    }}
-                  /> */}
                 </View>
               </View>
-              {
-                Origin !== null && Destination !== null && Start === false && (
-
+              { Origin !== null && Destination !== null && Start === false && (
                   <TouchableOpacity
                     style={globalStyles.btn}
-                    onPress={StartTrip}
-
-                  >
+                    onPress={StartTrip}>
                     <Text style={globalStyles.showText}>{Loading ? "Please wait..." : "Start Journey"}</Text>
                   </TouchableOpacity>
-                )
-              }
-
-              {JourneyDetails && JourneyDetails.rows?.elements[0].distance.value <= 4000 && Trigger === false && Start === true  && (
+                )}
+              {JourneyDetails && JourneyDetails?.rows?.[0]?.elements[0]?.distance?.value <= 4000 && Trigger === false && Start === true  && (
                   <TouchableOpacity
                     style={globalStyles.btn}
-                    onPress={LightTheBulb}
-
-                  >
+                    onPress={LightTheBulb}>
                     <Text style={globalStyles.showText}>{Loading ? "Please wait..." : "Trigger LED"}</Text>
                   </TouchableOpacity>
-                )
-              }
-
-                {
-                  Trigger === true && (
+                )}
+                { Trigger === true && (
                     <TouchableOpacity
                     style={globalStyles.btn}
-                    onPress={EndTrip}
-
-                  >
+                    onPress={EndTrip}>
                     <Text style={globalStyles.showText}>{Loading ? "Please wait..." : "End Trip"}</Text>
                   </TouchableOpacity>
-                  )
-                }
-              {  
-                Start === true && (
+                  )}
+              { Start === true && (
                   <View style={styles.mt}>
                     <Text style={styles.titleHead}>Trip has Started </Text>
                     <Text style={styles.text}>Distance is ~ {JourneyDetails && JourneyDetails.rows[0].elements[0].distance.text} </Text>
@@ -712,32 +552,17 @@ const getDistance = async () => {
                     <Text style={styles.text}>Origin Latitude is ~ {Origin.latitude} </Text>
                     <Text style={styles.text}>Origin Longitude is ~ {Origin.longitude} </Text>
                   </View>
-
-                )
-              }
-
-
+                )}
               <TouchableOpacity
                 style={globalStyles.btn}
-                onPress={() => navigate.navigate("DashboardTab", {
-                  screen: "Leave a Trace"
-                })}
-              >
+                onPress={() => navigate.goBack()}>
                 <Text style={globalStyles.showText}>{`<`} Go back</Text>
               </TouchableOpacity>
-
-
-
-
             </BottomSheetView>
           </BottomSheet>
-
         </>
-      </TouchableOpacity>
-
-      {
-        IsOpen === false && (
-
+      </View>
+      { IsOpen === false && (
           <TouchableOpacity
             style={[{
               position: 'absolute',
@@ -754,23 +579,15 @@ const getDistance = async () => {
               marginTop: 22,
               marginBottom: 11
             }]}
-            onPress={OpenBottom}
-          >
+            onPress={OpenBottom}>
             <Text style={globalStyles.showText}>Search</Text>
           </TouchableOpacity>
         )
       }
     </View>
-
-
-
-
-
   );
 }
-
 const styles = StyleSheet.create({
-
   mapContainer: {
     height: '100%',
     zIndex: -1,
@@ -798,16 +615,12 @@ const styles = StyleSheet.create({
     color: "#244242",
     letterSpacing: 2
   },
-
   mt: {
     marginTop: 32,
     marginBottom: 32,
   },
-
-
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20
   },
-
 });

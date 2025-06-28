@@ -80,16 +80,7 @@ const genres = {
 export const getMovies = async () => {
   const commonImage = require('../assets/benz.png');
   return [
-    {
-      key: '1',
-      title: 'BUS STATION',
-      poster: commonImage,
-      backdrop: commonImage,
-      rating: 8.0,
-      description: 'A soldier fighting aliens gets to relive the same day over and over again.',
-      releaseDate: '2014-06-06',
-      genres: [genres[28], genres[878]],
-    },
+
     {
       key: '2',
       title: 'HOTEL',
