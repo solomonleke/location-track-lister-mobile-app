@@ -377,6 +377,7 @@ export default function ShearDirection({  route , navigation }) {
   ]
 
    const UpdateAdrino = async () => {
+    const userToken = await AsyncStorage.getItem('accessToken');
     try {
       let result = await UpdateProfileAPI(userToken, {
         arduinoAddress: {

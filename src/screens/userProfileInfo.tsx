@@ -76,96 +76,110 @@ export default function UpdateProfileInfo() {
             <Icon name="arrow-left" size={24} color="#4F46E5" />
           </TouchableOpacity>
         </View>
-      <View style={styles.card}>
-        <TextInput
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-          style={styles.input}
-        />
+ <View style={styles.card}>
+  <View style={styles.formGroup}>
+    <Text style={styles.label}>Username</Text>
+    <TextInput
+      placeholder="Enter your username"
+      value={username}
+      onChangeText={setUsername}
+      style={styles.input}
+    />
+  </View>
 
-        <TextInput
-          value={search}
-          onChangeText={async (text) => {
-            setSearch(text);
-            if (text.length > 2) {
-              try {
-                const response = await axios.get(`https://maps.googleapis.com/maps/api/place/autocomplete/json`, {
-                  params: {
-                    input: text,
-                    key: GOOGLE_PLACES_API_KEY,
-                    language: 'en'
-                  }
-                });
-                setPredictions(response.data.predictions);
-              } catch (err) {
-                console.error("Autocomplete API error", err);
+  <View style={styles.formGroup}>
+    <Text style={styles.label}>First Name</Text>
+    <TextInput
+      placeholder="Enter your first name"
+      value={firstName}
+      onChangeText={setFirstName}
+      style={styles.input}
+    />
+  </View>
+
+  <View style={styles.formGroup}>
+    <Text style={styles.label}>Last Name</Text>
+    <TextInput
+      placeholder="Enter your last name"
+      value={lastName}
+      onChangeText={setLastName}
+      style={styles.input}
+    />
+  </View>
+
+  <View style={styles.formGroup}>
+    <Text style={styles.label}>Arduino Address</Text>
+    <TextInput
+      value={search}
+      onChangeText={async (text) => {
+        setSearch(text);
+        if (text.length > 2) {
+          try {
+            const response = await axios.get(`https://maps.googleapis.com/maps/api/place/autocomplete/json`, {
+              params: {
+                input: text,
+                key: GOOGLE_PLACES_API_KEY,
+                language: 'en'
               }
-            } else {
+            });
+            setPredictions(response.data.predictions);
+          } catch (err) {
+            console.error("Autocomplete API error", err);
+          }
+        } else {
+          setPredictions([]);
+        }
+      }}
+      placeholder="Search for your Arduino location"
+      style={styles.input}
+    />
+  </View>
+
+  {predictions.length > 0 && (
+    <FlatList
+      data={predictions}
+      keyExtractor={(item) => item.place_id}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          style={styles.predictionItem}
+          onPress={async () => {
+            try {
+              const res = await axios.get(`https://maps.googleapis.com/maps/api/place/details/json`, {
+                params: {
+                  key: GOOGLE_PLACES_API_KEY,
+                  place_id: item.place_id
+                }
+              });
+
+              const details = res.data.result;
+              const { lat, lng } = details.geometry.location;
+
+              setAddress(details.formatted_address);
+              setArduinoLat(lat.toString());
+              setArduinoLong(lng.toString());
               setPredictions([]);
+              setSearch(details.formatted_address);
+            } catch (err) {
+              console.error("Details fetch error", err);
             }
           }}
-          placeholder="Arduino address"
-          style={styles.input}
-        />
-
-        {predictions.length > 0 && (
-          <FlatList
-            data={predictions}
-            keyExtractor={(item) => item.place_id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.predictionItem}
-                onPress={async () => {
-                  try {
-                    const res = await axios.get(`https://maps.googleapis.com/maps/api/place/details/json`, {
-                      params: {
-                        key: GOOGLE_PLACES_API_KEY,
-                        place_id: item.place_id
-                      }
-                    });
-
-                    const details = res.data.result;
-                    const { lat, lng } = details.geometry.location;
-
-                    setAddress(details.formatted_address);
-                    setArduinoLat(lat.toString());
-                    setArduinoLong(lng.toString());
-                    setPredictions([]);
-                    setSearch(details.formatted_address); // Better UX
-
-                  } catch (err) {
-                    console.error("Details fetch error", err);
-                  }
-                }}
-              >
-                <Text>{item.description}</Text>
-              </TouchableOpacity>
-            )}
-            style={styles.predictionsList}
-            keyboardShouldPersistTaps="handled"
-          />
-        )}
-
-        <TouchableOpacity
-          style={[styles.button, loading && { opacity: 0.6 }]}
-          onPress={handleUpdate}
-          disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Please wait...' : 'Update Profile'}</Text>
+        >
+          <Text>{item.description}</Text>
         </TouchableOpacity>
-      </View>
+      )}
+      style={styles.predictionsList}
+      keyboardShouldPersistTaps="handled"
+    />
+  )}
+
+  <TouchableOpacity
+    style={[styles.button, loading && { opacity: 0.6 }]}
+    onPress={handleUpdate}
+    disabled={loading}>
+    <Text style={styles.buttonText}>{loading ? 'Please wait...' : 'Update Profile'}</Text>
+  </TouchableOpacity>
+</View>
+
     </ScrollView>
   );
 }
@@ -189,6 +203,16 @@ const styles = StyleSheet.create({
   backBtn: {
     marginHorizontal: -10,
   },
+  formGroup: {
+  marginBottom: 15
+},
+label: {
+  marginBottom: 6,
+  fontSize: 14,
+  fontWeight: '500',
+  color: '#374151'
+},
+
   containeheader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

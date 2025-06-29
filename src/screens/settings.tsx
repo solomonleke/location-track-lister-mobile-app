@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DeleteAccount } from '../Utilities/ApiCalls';
 
 export default function Settings({ navigation }) {
   const [rememberLogin, setRememberLogin] = useState(true);
@@ -24,21 +25,14 @@ export default function Settings({ navigation }) {
 
   const deleteAccount = async () => {
     try {
+      const token = await AsyncStorage.getItem('accessToken');
+      const res = await DeleteAccount(token);
       // Replace with your actual delete API call
-      const res = await fetch('https://your-api.com/delete-account', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // body: JSON.stringify({ userId: '...' }),
-      });
-
-      if (res.ok) {
+      if (res.status === 200 || res.status === 201) {
         await AsyncStorage.clear();
         navigation.navigate('GetStared');
       } else {
-        const errorData = await res.json();
-        Alert.alert('Failed', errorData.message || 'Account deletion failed.');
+        Alert.alert('Failed', 'Account deletion failed.');
       }
     } catch (error) {
       Alert.alert('Error', 'Network error. Please try again later.');
@@ -96,7 +90,7 @@ export default function Settings({ navigation }) {
           description="Change your phone passcode unlock/view your account detils."
           icon="lock"
           hasArrow
-          onValueChange={() => {}}
+          onPress={() => navigation.navigate("changepassword")}
         />
         <SettingItem
           title="Account Update info"
@@ -106,7 +100,7 @@ export default function Settings({ navigation }) {
           onPress={()=>navigation.navigate("updateinfo")}
         />
         <SettingItem
-          title="Remember Login"
+          title="Passcode Auth Login"
           icon="refresh-ccw"
           toggle
           value={rememberLogin}

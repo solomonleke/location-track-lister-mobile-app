@@ -547,7 +547,7 @@ const getDistance = async () => {
               { Start === true && (
                   <View style={styles.mt}>
                     <Text style={styles.titleHead}>Trip has Started </Text>
-                    <Text style={styles.text}>Distance is ~ {JourneyDetails && JourneyDetails.rows[0].elements[0].distance.text} </Text>
+                    <Text style={styles.text}>Distance is ~ {JourneyDetails && JourneyDetails?.rows[0].elements[0].distance.text} </Text>
                     <Text style={styles.text}>Duration is ~ {JourneyDetails && JourneyDetails.rows[0].elements[0].duration.text} </Text>
                     <Text style={styles.text}>Origin Latitude is ~ {Origin.latitude} </Text>
                     <Text style={styles.text}>Origin Longitude is ~ {Origin.longitude} </Text>

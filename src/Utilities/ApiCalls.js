@@ -236,7 +236,38 @@ export const DeleteAddress = (id, token) => {
         }
       });
 };
+export const DeleteAccount = (token) => {
 
+    let config = {
+      method: "DELETE",
+      maxBodyLength: Infinity,
+
+      url: `${baseUrl}/api/v1/user/delete-account`,
+
+      headers: {
+        "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    return axios
+      .request(config)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log("error", error);
+        if (error.response.data.message) {
+          throw new Error(error.response.data.message);
+        } else if (error.response.data) {
+          throw new Error(error.response);
+        } else if (error.request) {
+          throw new Error(error.message);
+        } else {
+          throw new Error(error.message);
+        }
+      });
+};
 
 export const AddressApi = (token, Payload) => {
     console.log("payload", Payload, token)
@@ -395,6 +426,40 @@ export const GoogleLoginApi = (Payload) => {
     
     };
   
+    return axios
+      .request(config)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log("error", error);
+        if (error.response.data.message) {
+          throw new Error(error.response.data.message);
+        } else if (error.response.data) {
+          throw new Error(error.response);
+        } else if (error.request) {
+          throw new Error(error.message);
+        } else {
+          throw new Error(error.message);
+        }
+      });
+  };
+
+export const ChangePasswords = (token, Payload) => {
+    let data = JSON.stringify(Payload);
+
+    let config = {
+      method: "PATCH",
+      maxBodyLength: Infinity,
+  
+      url: `${baseUrl}/api/v1/user/change-password`,
+
+      headers: {
+        "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+      },
+      data: data,
+    };
     return axios
       .request(config)
       .then((response) => {

@@ -74,7 +74,7 @@ export default function Onbording() {
         </View>
         {/* Text Container */}
         <View style={styles.fillCenter}>
-          <Text style={styles.text}>View Board</Text>
+          <Text style={styles.text}>Ezyp Gps</Text>
         </View>
         {/* iconContainer */}
         <View style={styles.fillCenter}>

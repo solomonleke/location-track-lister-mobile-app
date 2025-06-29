@@ -37,13 +37,13 @@ export default function UsernameScreen({ navigation }) {
 	}, [navigation]);
   const scaleFont = (size) => size * (width / 375); // scale to iPhone 11 width baseline
 
-  //const [username, setUsername] = useState('francisdaniel140@gmail.com');
-  //const [password, setPassword] = useState('francis1@male');
+  const [username, setUsername] = useState('francisdaniel140@gmail.com');
+  const [password, setPassword] = useState('francis1@male');
 
   //const [username, setUsername] = useState('lordsoliz@gmail.com');
   //const [password, setPassword] = useState('Billgate712');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  //const [username, setUsername] = useState('');
+  //const [password, setPassword] = useState('');
   const [step, setStep] = useState('username');
   const [Loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
