@@ -530,7 +530,7 @@ const getDistance = async () => {
                     <Text style={globalStyles.showText}>{Loading ? "Please wait..." : "Start Journey"}</Text>
                   </TouchableOpacity>
                 )}
-              {JourneyDetails && JourneyDetails?.rows?.[0]?.elements[0]?.distance?.value <= 4000 && Trigger === false && Start === true  && (
+              {JourneyDetails && JourneyDetails?.rows?.[0]?.elements[0]?.distance?.value <= 1000 && Trigger === false && Start === true  && (
                   <TouchableOpacity
                     style={globalStyles.btn}
                     onPress={LightTheBulb}>

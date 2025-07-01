@@ -37,7 +37,6 @@ export const GoogleAuth = (Payload) => {
       });
   };
 export const ForgotPassword = (Payload) => {
-    console.log("payload", Payload)
     let data = JSON.stringify(Payload);
     let config = {
       method: "post",
@@ -453,6 +452,39 @@ export const ChangePasswords = (token, Payload) => {
       maxBodyLength: Infinity,
   
       url: `${baseUrl}/api/v1/user/change-password`,
+
+      headers: {
+        "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+      },
+      data: data,
+    };
+    return axios
+      .request(config)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        console.log("error", error);
+        if (error.response.data.message) {
+          throw new Error(error.response.data.message);
+        } else if (error.response.data) {
+          throw new Error(error.response);
+        } else if (error.request) {
+          throw new Error(error.message);
+        } else {
+          throw new Error(error.message);
+        }
+      });
+  };
+export const ResetPasswords = (token, Payload) => {
+    let data = JSON.stringify(Payload);
+
+    let config = {
+      method: "PATCH",
+      maxBodyLength: Infinity,
+  
+      url: `${baseUrl}/api/v1/user/reset-password`,
 
       headers: {
         "Content-Type": "application/json",

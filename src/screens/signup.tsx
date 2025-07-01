@@ -93,7 +93,8 @@ export default function SignupScreen({ navigation }) {
 					setLoading(false);
 					// await AsyncStorage.setItem('accessToken', result.data.accessToken);
 					navigation.navigate("otp",{
-            name: email
+            name: email,
+						type: 'verify-email'
           });
 				} else {
 					throw new Error(result.data.message || 'Signup failed');

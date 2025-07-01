@@ -25,6 +25,7 @@ import SignupScreen from '../screens/signup';
 import VerifyEmail from '../screens/emailOtp';
 import UpdateProfileInfo from '../screens/userProfileInfo';
 import ChangePassword from '../screens/changePassword';
+import ForgetPassword from '../screens/ForgetpasswordChange';
 
 const Stack = createNativeStackNavigator();
 
@@ -101,7 +102,10 @@ export default function Routes() {
       <Stack.Screen name="otp" component={VerifyEmail} />
 
       <Stack.Screen name="updateinfo" component={UpdateProfileInfo} />
+
+      
       <Stack.Screen name="changepassword" component={ChangePassword} />
+      <Stack.Screen name="forgotpassword" component={ForgetPassword} />
       <Stack.Screen name="signup" component={SignupScreen} />
       <Stack.Screen name="GetStared" component={GetStarted} />
       <Stack.Screen  name="TrackList" component={TrackList} />

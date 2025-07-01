@@ -24,8 +24,9 @@ import { VerifyOTPApi } from '../Utilities/ApiCalls';
 const { width } = Dimensions.get('window');
 
 export default function VerifyEmail({ navigation, route }) {
-  const { name } = route.params || 'francisdaniel140@gmail.com';
+  const { name, type } = route.params || 'francisdaniel140@gmail.com';
 
+  console.log(name, type, 'name, type')
   const [Otp, setOtp] = useState('');
   const [ShowOtp, setShowOtp] = useState(false);
   const [Success, setSuccess] = useState(false);
@@ -56,10 +57,15 @@ export default function VerifyEmail({ navigation, route }) {
     try {
       const result = await VerifyOTPApi({
         token: parseInt(Otp),
-        reason: 'verify-email',
+        reason: type,
       });
-
+      console.log(result.data.accessToken,"this the result")
       if (result.data.status === 200) {
+        if(type === "forgot-password"){
+          navigation.navigate('forgotpassword', {
+            code: result.data.accessToken,
+          });
+        }
         setModalVisible(true);
       }
     } catch (e) {

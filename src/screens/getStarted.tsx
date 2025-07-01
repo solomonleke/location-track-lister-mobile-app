@@ -23,47 +23,46 @@ const { width } = Dimensions.get('window');
 export default function GetStarted() {
 	const navigation = useNavigation<any>();
   const [Loading, setLoading] = useState(false);
+  useEffect(() => {
+      GoogleSignin.configure({
+        webClientId: '105422903683-u49m4bgnemgn5bgabhobi78271buo1nu.apps.googleusercontent.com',
+        scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
+        forceCodeForRefreshToken: false, // [Android] related to `serverAuthCode`, read the docs link below *.
+        iosClientId: '105422903683-064223qn9g0n30j55i36bnv9359bs3fb.apps.googleusercontent.com',
+      });
+  }, []);
+  
 
-
-  const handleGoogleLogin = async () => {
-    const fcmtoken = await AsyncStorage.getItem('FCMToken');
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-
-      const idToken = userInfo.idToken;
-      const accessToken = (await GoogleSignin.getTokens()).accessToken;
-
-      // 🔐 Send idToken or accessToken to your backend for verification
-      try {
-        let result = await GoogleLoginApi({
-          accessToken: idToken,
-          deviceId: fcmtoken,
-        })
-        console.log(result, 'result')
-        if (result.data.status === 200) {
-          setLoading(false)
-          console.log(result.data)
-          const token = result.data.accessToken;
-          // ✅ Save token to AsyncStorage
-            navigation.navigate("Main");
-        }
-      }
-      catch (e) {
-        console.log("error", e.message)
-        setLoading(false)
-        Alert.alert(JSON.stringify(e.message))
-      }
-
-      // const data = await response.json();
-      // console.log('Server response:', data);
-
-      // ✅ Optionally navigate or store token
-      // navigation.navigate('Home')
-    } catch (error) {
-      console.error('Google Sign-In error:', error);
+ const handleGoogleLogin = async () => {
+  const fcmtoken = await AsyncStorage.getItem('FCMToken');
+  try {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    console.log('userInfo:', userInfo.data);
+    const idToken = userInfo.data?.idToken;
+    const tokens = await GoogleSignin.getTokens();
+    const accessToken = tokens.accessToken;
+    console.log(idToken,'idToken');
+    console.log(accessToken,'accessToken');
+    let result = await GoogleLoginApi({
+      accessToken: accessToken,
+      deviceId: fcmtoken,
+    });
+    console.log(result,'yui')
+    if (result.data.status === 200) {
+      setLoading(false);
+      const token = result.data.accessToken;
+      await AsyncStorage.setItem('accessToken', token);
+      navigation.navigate('Main');
     }
-  };
+  } catch (error) {
+    console.error('Google Sign-In error:', error);
+    setLoading(false);
+    Alert.alert(JSON.stringify(error.message));
+    await GoogleSignin.signOut(); 
+  }
+};
+
 useEffect(() => {
   requestUserPermission();
   setupNotificationListeners();

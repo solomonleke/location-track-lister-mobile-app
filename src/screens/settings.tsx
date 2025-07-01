@@ -99,7 +99,7 @@ export default function Settings({ navigation }) {
           hasArrow
           onPress={()=>navigation.navigate("updateinfo")}
         />
-        <SettingItem
+        {/* <SettingItem
           title="Passcode Auth Login"
           icon="refresh-ccw"
           toggle
@@ -112,7 +112,7 @@ export default function Settings({ navigation }) {
           toggle
           value={useFaceID}
           onValueChange={setUseFaceID}
-        />
+        />*/}
         <SettingItem
           title="Delete my Account"
           icon="trash"

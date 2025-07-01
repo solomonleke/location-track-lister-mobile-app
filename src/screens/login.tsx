@@ -277,9 +277,9 @@ export default function UsernameScreen({ navigation }) {
                         if (result?.status === 200 || result?.data?.status === 200) {
                           Alert.alert('Success', 'OTP has been sent to your email');
                           setShowForgotInput(false);
-                          navigation.navigate('OtpVerify', {
-                            name: 'forgot-password',
-                            email: text,
+                          navigation.navigate('otp', {
+                            type: 'forgot-password',
+                            name: text,
                           });
                         } else {
                           Alert.alert('Error', result?.data?.message || 'Something went wrong');
