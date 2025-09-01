@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:771249442849:android:51d4118e97faf759d81360",
+        "mobilesdk_app_id": "1:771249442849:android:0eedad9a80dc62dbd81360",
         "android_client_info": {
-          "package_name": "com.ezypgps"
+          "package_name": "com.solomonleke.exygps"
         }
       },
       "oauth_client": [],

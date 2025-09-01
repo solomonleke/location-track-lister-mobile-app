@@ -1,4 +1,4 @@
-package com.ezypgps
+package com.solomonleke.exygps
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -1,4 +1,4 @@
-package com.ezypgps
+package com.solomonleke.exygps
 
 import android.app.Application
 import com.facebook.react.PackageList

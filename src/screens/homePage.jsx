@@ -12,8 +12,9 @@ import {
   TouchableOpacity,
   Platform,
   PermissionsAndroid,
-	ScrollView,
-	TextInput,
+  ScrollView,
+  TextInput,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 const { width, height } = Dimensions.get('window');
@@ -23,7 +24,7 @@ import Rating from '../components/Rating';
 import LinearGradient from 'react-native-linear-gradient';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { GetUserProfile } from '../Utilities/ApiCalls';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -53,7 +54,6 @@ const Backdrop = ({ movies, scrollX }) => {
           const translateX = scrollX.interpolate({
             inputRange: [(index - 2) * ITEM_SIZE, (index - 1) * ITEM_SIZE],
             outputRange: [0, width],
-            // extrapolate:'clamp'
           });
           return (
             <Animated.View
@@ -66,85 +66,113 @@ const Backdrop = ({ movies, scrollX }) => {
               }}
             >
               <Image
-                source={item.backdrop }
-								blurRadius={0.9}
-                style={{
-                  width,
-                  height: BACKDROP_HEIGHT,
-                  position: 'absolute',
-                }}
+                source={item.backdrop}
+                blurRadius={0.9}
+                style={{ width, height: BACKDROP_HEIGHT, position: 'absolute' }}
               />
             </Animated.View>
           );
         }}
       />
-			<LinearGradient
-				colors={['#4c669f', '#3b5998', '#192f6a']}
-				style={{ flex: 1, borderRadius: 5 }}
-			>
-				{/* <Text style={{ color: 'white', height: BACKDROP_HEIGHT,
-          width,
-          position: 'absolute',
-          bottom: 0, }}>Hello Gradient!</Text> */}
-			</LinearGradient>
+      <LinearGradient
+        colors={['#4c669f', '#3b5998', '#192f6a']}
+        style={{ flex: 1, borderRadius: 5 }}
+      />
     </View>
   );
 };
+
 export default function HomePage({ navigation }) {
-	const [activeCategory, setActiveCategory] = React.useState('South America');
-	const [search, setSearch] = React.useState('');
+  const [activeCategory, setActiveCategory] = React.useState('South America');
+  const [search, setSearch] = React.useState('');
   const [DraggableMarker, setDraggableMarker] = React.useState(null);
   const [location, setLocation] = React.useState(null);
   const [userdata, setUserData] = React.useState('');
   const [showBackdrop, setShowBackdrop] = React.useState(true);
   const [rawMovies, setRawMovies] = React.useState([]);
+  const [locationGranted, setLocationGranted] = React.useState(false);
 
+  React.useLayoutEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
 
-	React.useLayoutEffect(() => {
-		navigation.setOptions({ headerShown: false });
-	}, [navigation]);
   const [movies, setMovies] = React.useState([]);
   const scrollX = React.useRef(new Animated.Value(0)).current;
-	const flatListRef = React.useRef(null);
+  const flatListRef = React.useRef(null);
 
   const requestLocationPermission = async () => {
-  if (Platform.OS === 'android') {
-    const hasPermission = await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    );
-    if (hasPermission) return true;
-
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    );
-
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
-  }
-  return true;
-};
-
-const UserProfile = async()=>{
-  const userToken = await AsyncStorage.getItem('accessToken');
-  try{
-    const result = await GetUserProfile(userToken)
-    if(result.status === 200){
-      setUserData(result.data.user)
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+      ]);
+      if (
+        granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted["android.permission.ACCESS_BACKGROUND_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log("Location permissions granted");
+        setLocationGranted(true);
+      }
+    } catch (err) {
+      console.warn(err);
     }
-  }catch(e){
-    console.log(e.message)
-  }
-}
+  };
 
   React.useEffect(() => {
-    requestLocationPermission()
-    UserProfile()
+    const checkPermissions = async () => {
+      const fine = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      const background = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION);
+      if (!fine || !background) {
+        Alert.alert(
+          'Location Access Required',
+          `EzyGPS requires access to your location in order to suggest nearby places (like banks, bus stops), provide real-time route assistance, and map your shared destinations.
+\nBy continuing, you also agree to our Terms of Service and Privacy Policy.`,
+          [
+            {
+              text: 'Privacy & Terms',
+              onPress: async () => {
+                await Linking.openURL('https://ezygps-delete-account.vercel.app/privacy.html');
+                navigation.replace('GetStared');
+              },
+              style: 'default',
+            },
+            {
+              text: 'Cancel',
+              onPress: () => navigation.replace('GetStared'),
+              style: 'cancel',
+            },
+            {
+              text: 'Accept & Continue',
+              onPress: () => requestLocationPermission(),
+              style: 'default',
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+    };
+    checkPermissions();
+  }, []);
+
+  const UserProfile = async () => {
+    const userToken = await AsyncStorage.getItem('accessToken');
+    try {
+      const result = await GetUserProfile(userToken);
+      if (result.status === 200) {
+        setUserData(result.data.user);
+      }
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+
+  React.useEffect(() => {
+    UserProfile();
     const fetchData = async () => {
       const movies = await getMovies();
       setRawMovies(movies);
       setMovies([{ key: 'empty-left' }, ...movies, { key: 'empty-right' }]);
     };
-
-
     if (movies.length === 0) {
       fetchData(movies);
     }
@@ -153,78 +181,67 @@ const UserProfile = async()=>{
   if (movies.length === 0) {
     return <Loading />;
   }
-		// Adjust this mapping to match your data dynamically
-    const movieTitles = (movies || [])
+
+  const movieTitles = (movies || [])
     .filter((movie) => movie && movie.title)
     .map((movie) => movie.title);
 
-
-    const handleCategoryPress = (title) => {
-      setActiveCategory(title);
-      const actualIndex = rawMovies.findIndex((m) => m.title === title);
-      if (actualIndex !== -1) {
-        // Offset by 1 to skip "empty-left"
-        flatListRef.current?.scrollToIndex({ index: actualIndex, animated: true });
+  const handleCategoryPress = (title) => {
+    setActiveCategory(title);
+    const actualIndex = rawMovies.findIndex((m) => m.title === title);
+    if (actualIndex !== -1) {
+      flatListRef.current?.scrollToIndex({ index: actualIndex, animated: true });
     }
-};
+  };
+
   return (
     <View style={styles.container}>
       {showBackdrop && <Backdrop movies={movies} scrollX={scrollX} />}
-
       <StatusBar hidden />
-			 {/* Header */}
-						<View style={styles.header} blurRadius={5}>
-							<View>
-								<Text style={styles.greeting}>Hello, {userdata.username} 👋</Text>
-								<Text style={styles.subGreeting}>Welcome to EzypGps</Text>
-							</View>
-							<Image
-								source={require('../assets/benz.png')}
-								style={styles.profileImage}
-							/>
-						</View>
-
-						{/* Search */}
-						<View style={styles.searchContainer}>
-							<Icon name="search-outline" size={20} color="#555" />
-							<TextInput
-								placeholder="Search"
-								placeholderTextColor="#aaa"
-								value={search}
-								onChangeText={(text) => {
-									setSearch(text);
-									const matchIndex = rawMovies.findIndex((m) =>
-										m.title?.toLowerCase().includes(text.toLowerCase())
-									);
-									if (matchIndex !== -1) {
-										flatListRef.current?.scrollToIndex({ index: matchIndex, animated: true });
-										setActiveCategory(rawMovies[matchIndex].title);
-									}
-								}}
-								style={styles.searchInput}
-							/>
-
-							<TouchableOpacity onPress={() => setShowBackdrop(prev => !prev)}>
-                <Icon name="options-outline" size={20} color="#622cfc" style={styles.filterIcon} />
-              </TouchableOpacity>
-
-						</View>
-
-						{/* Category Tabs */}
-						<View style={{height:'4.5%'}}>
-						<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryTabs}>
-						{movieTitles.map((title) => (
-								<TouchableOpacity
-								key={title}
-								onPress={() => handleCategoryPress(title)}
-								style={[styles.categoryBtn, title === activeCategory && styles.activeCategory]}>
-								<Text style={[styles.categoryText, title === activeCategory && styles.activeCategoryText]}>
-									{title}
-								</Text>
-							</TouchableOpacity>							
-							))}
-						</ScrollView>
-						</View>
+      <View style={styles.header} blurRadius={5}>
+        <View>
+          <Text style={styles.greeting}>Hello, {userdata.username} 👋</Text>
+          <Text style={styles.subGreeting}>Welcome to EzypGps</Text>
+        </View>
+        <View style={styles.profileImage}>
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>{userdata.username?.[0]?.toUpperCase()}</Text>
+        </View>
+      </View>
+      <View style={styles.searchContainer}>
+        <Icon name="search-outline" size={20} color="#555" />
+        <TextInput
+          placeholder="Search"
+          placeholderTextColor="#aaa"
+          value={search}
+          onChangeText={(text) => {
+            setSearch(text);
+            const matchIndex = rawMovies.findIndex((m) => m.title?.toLowerCase().includes(text.toLowerCase()));
+            if (matchIndex !== -1) {
+              flatListRef.current?.scrollToIndex({ index: matchIndex, animated: true });
+              setActiveCategory(rawMovies[matchIndex].title);
+            }
+          }}
+          style={styles.searchInput}
+        />
+        <TouchableOpacity onPress={() => setShowBackdrop(prev => !prev)}>
+          <Icon name="options-outline" size={20} color="#622cfc" style={styles.filterIcon} />
+        </TouchableOpacity>
+      </View>
+      <View style={{ height: '4.5%' }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryTabs}>
+          {movieTitles.map((title) => (
+            <TouchableOpacity
+              key={title}
+              onPress={() => handleCategoryPress(title)}
+              style={[styles.categoryBtn, title === activeCategory && styles.activeCategory]}
+            >
+              <Text style={[styles.categoryText, title === activeCategory && styles.activeCategoryText]}>
+                {title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
       <Animated.FlatList
         ref={flatListRef}
         showsHorizontalScrollIndicator={false}
@@ -237,11 +254,7 @@ const UserProfile = async()=>{
         contentContainerStyle={{ alignItems: 'center' }}
         snapToInterval={ITEM_SIZE}
         initialNumToRender={5}
-        getItemLayout={(data, index) => ({
-          length: ITEM_SIZE,
-          offset: ITEM_SIZE * index,
-          index,
-        })}
+        getItemLayout={(data, index) => ({ length: ITEM_SIZE, offset: ITEM_SIZE * index, index })}
         snapToAlignment='start'
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -252,33 +265,29 @@ const UserProfile = async()=>{
           if (!item.poster) {
             return <View style={{ width: EMPTY_ITEM_SIZE }} />;
           }
-
           const inputRange = [
             (index - 2) * ITEM_SIZE,
             (index - 1) * ITEM_SIZE,
             index * ITEM_SIZE,
           ];
-
           const translateY = scrollX.interpolate({
             inputRange,
             outputRange: [100, 50, 100],
             extrapolate: 'clamp',
           });
-
           return (
-						<TouchableOpacity
-						onPress={() =>
-							navigation.navigate('TrackList', {
-								title: item.title,
-								description: item.description,
-								poster: item.poster,
-								genres: item.genres,
-								// add other fields as needed
-							})
-						}
-						activeOpacity={0.8}
-						style={{ width: ITEM_SIZE, top: -130, height: '5%' }}
-					>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('TrackList', {
+                  title: item.title,
+                  description: item.description,
+                  poster: item.poster,
+                  genres: item.genres,
+                })
+              }
+              activeOpacity={0.8}
+              style={{ width: ITEM_SIZE, top: -130, height: '5%' }}
+            >
               <Animated.View
                 style={{
                   marginHorizontal: SPACING,
@@ -286,19 +295,15 @@ const UserProfile = async()=>{
                   alignItems: 'center',
                   transform: [{ translateY }],
                   backgroundColor: '#eee',
-                  borderRadius: 34
+                  borderRadius: 34,
                 }}
               >
-                <Image
-                  source={item.poster }
-                  style={styles.posterImage}
-                />
-                <Text style={{ fontSize: 24, paddingBottom:10 }} numberOfLines={1}>
+                <Image source={item.poster} style={styles.posterImage} />
+                <Text style={{ fontSize: 24, paddingBottom: 10 }} numberOfLines={1}>
                   {item.title}
                 </Text>
-                {/* <Rating rating={item.rating} /> */}
                 <Genres genres={item.genres} />
-                <Text style={{ fontSize: 12, paddingLeft:6 }} numberOfLines={3}>
+                <Text style={{ fontSize: 12, paddingLeft: 6 }} numberOfLines={3}>
                   {item.description}
                 </Text>
               </Animated.View>
@@ -316,7 +321,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-	header: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -333,19 +338,19 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 40,
     height: 40,
-		backgroundColor: '#622cfc',
-		//borderColor: '#622cfc',
+    backgroundColor: '#622cfc',
     borderRadius: 20,
-		borderWidth:0.5,
-    resizeMode: 'contain',
+    borderWidth: 0.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
     backgroundColor: '#F2F3F5',
     marginVertical: 20,
-		marginHorizontal: 13,
+    marginHorizontal: 13,
     paddingVertical: 5,
-		paddingHorizontal:10,
+    paddingHorizontal: 10,
     borderRadius: 15,
     alignItems: 'center',
   },
@@ -355,7 +360,6 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   filterIcon: {
-    // backgroundColor: '#622cfc',
     padding: 10,
     borderRadius: 10,
     marginLeft: 10,
@@ -382,7 +386,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   container: {
-		flex: 1,
+    flex: 1,
     backgroundColor: '#fff',
     paddingTop: 20,
   },
@@ -395,10 +399,9 @@ const styles = StyleSheet.create({
   posterImage: {
     width: '100%',
     height: ITEM_SIZE * 0.9,
-    // resizeMode: 'cover',
     borderRadius: 24,
     margin: 0,
     marginBottom: 10,
-		resizeMode: 'contain',
+    resizeMode: 'contain',
   },
 });

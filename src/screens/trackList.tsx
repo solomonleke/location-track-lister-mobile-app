@@ -26,18 +26,48 @@ export default function TrackList({  route , navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
-  const [respons, setRespons] = useState([]);
+  const [allPlaces, setAllPlaces] = useState([]); // original unfiltered data
+  const [respons, setRespons] = useState([]);     // currently filtered list
   const [loading, setLoading] = useState(true);
   const [radius, setRadius] = useState(3000); // default radius
   const [showRadiusSelector, setShowRadiusSelector] = useState(false);
   const [slideAnim] = useState(new Animated.Value(-width)); // for sliding in drawer
-  const [activeTab, setActiveTab] = useState('Day');
+  const [activeTab, setActiveTab] = useState('');
+  const [currentTripTime, setCurrentTripTime] = useState('');
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
     if (title) {
       requestLocationPermission();
     }
   }, [title]); // <-- re-run when title changes
+
+
+  useEffect(() => {
+    const startTime = new Date();
+
+    const updateTimer = setInterval(() => {
+      // ⏱ Update elapsed time
+      const now = new Date();
+      const diff = Math.floor((now - startTime) / 1000); // in seconds
+      setElapsedTime(diff);
+
+      // 🕗 Update current time range
+      const formatTime = (date) => {
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        return `${hours}:${minutes} ${ampm}`;
+      };
+
+      const tripStart = formatTime(startTime);
+      const tripEnd = formatTime(new Date(startTime.getTime() + 2 * 60 * 60 * 1000)); // +2 hours
+      setCurrentTripTime(`${tripStart} - ${tripEnd}`);
+    }, 1000);
+
+    return () => clearInterval(updateTimer);
+  }, []);
 
 
   const requestLocationPermission = async () => {
@@ -106,7 +136,6 @@ const toggleRadiusSelector = () => {
           //key: 'AIzaSyB8DE9mQ1yxh8LaencPAJtIe6X79KuTTBg',
         },
       });
-      console.log(response,'tyj');
       if (response.status === 200) {
         const Data = response.data.results.map((data) => ({
           id: data.place_id,
@@ -116,7 +145,8 @@ const toggleRadiusSelector = () => {
           location: data.geometry,
           opening_hours: data.opening_hours?.open_now ? 'Open Now' : 'Closed',
         }));
-        // console.log(response.data.results)
+        console.log(response.data.results)
+        setAllPlaces(Data);
         setRespons(Data);
       } else {
         Alert.alert('Error', 'Failed to fetch hospital data.');
@@ -128,6 +158,23 @@ const toggleRadiusSelector = () => {
       setLoading(false);
     }
   };
+
+  console.log(respons, "placooo")
+
+const handleFilterChange = (label) => {
+  setActiveTab(label);
+
+  if (label === 'Open Now') {
+    const openPlaces = allPlaces.filter(place => place.opening_hours === 'Open Now');
+    setRespons(openPlaces);
+  } else if (label === 'Closed Now') {
+    const closedPlaces = allPlaces.filter(place => place.opening_hours === 'Closed');
+    setRespons(closedPlaces);
+  } else {
+    setRespons(allPlaces); // fallback to show everything
+  }
+};
+
 
   return (
 		<ImageBackground
@@ -143,7 +190,7 @@ const toggleRadiusSelector = () => {
 				<View style={styles.logohead}>
 					<View style={styles.logotext}>
 				<Text style={styles.carTitle}>{title}</Text>
-        <Text style={styles.plate}>AG 5758 SS</Text>
+        <Text style={styles.plate}>{title} LIST</Text>
 				</View>
 				<Image
 					source={poster} // adjust the path accordingly
@@ -154,10 +201,10 @@ const toggleRadiusSelector = () => {
         
 
       <View style={styles.tabs}>
-        {['Day', 'Week', 'Month', 'Year'].map((label, index) => (
+        {['Open Now', 'Closed Now'].map((label, index) => (
           <TouchableOpacity
             key={index}
-            onPress={() => setActiveTab(label)}
+            onPress={() => handleFilterChange(label)}
             style={[styles.tab, activeTab === label && styles.activeTab]}
           >
             <Text
@@ -169,6 +216,7 @@ const toggleRadiusSelector = () => {
         ))}
       </View>
 
+
       </View>
 				<View style={styles.summaryBg}>
       {/* Summary Section */}
@@ -177,9 +225,12 @@ const toggleRadiusSelector = () => {
           {/* <MaterialIcons name="speed" size={18} color="gray" /> */}
 					<View style={styles.summaryItem}>
 					<Icon name="time-outline" size={19} color="#622cfc" />
-					<Text style={styles.summaryText}>05h : 04m : 13s</Text>
+					<Text style={styles.summaryText}>
+            {`${String(Math.floor(elapsedTime / 3600)).padStart(2, '0')}h : ${String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0')}m : ${String(elapsedTime % 60).padStart(2, '0')}s`}
+          </Text>
+
 					</View>
-					<Text style={styles.tripMeta}>total spend</Text>
+					<Text style={styles.tripMeta}>Time count</Text>
         </View>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryText}>:</Text>
@@ -223,7 +274,7 @@ const toggleRadiusSelector = () => {
                   style={styles.mapPreview}
                 />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.tripTime}>08:08 PM - 10:47 PM</Text>
+                 <Text style={styles.tripTime}>{currentTripTime}</Text>
                   <Text style={styles.tripRoute}>{item.name}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
