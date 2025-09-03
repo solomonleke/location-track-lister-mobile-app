@@ -1,0 +1,157 @@
+
+FAILURE: Build completed with 7 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-reanimated:buildCMakeRelWithDebInfo[arm64-v8a][reanimated,worklets]'.
+> com.android.ide.common.process.ProcessException: ninja: Entering directory `C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android\.cxx\RelWithDebInfo\6s4k5v70\arm64-v8a'
+  [0/2] Re-checking globbed directories...
+  ninja: build stopped: .
+  
+  C++ build system [build] failed while executing:
+      @echo off
+      "C:\\Users\\EKEDP\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+        -C ^
+        "C:\\Users\\EKEDP\\Documents\\GitHub\\location-track-lister-mobile-app\\node_modules\\react-native-reanimated\\android\\.cxx\\RelWithDebInfo\\6s4k5v70\\arm64-v8a" ^
+        reanimated ^
+        worklets
+    from C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android
+  ninja: error: mkdir(src/main/cpp/worklets/CMakeFiles/worklets.dir/C_/Users/EKEDP/Documents/GitHub/location-track-lister-mobile-app/node_modules): No such file or directory
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-reanimated:buildCMakeRelWithDebInfo[armeabi-v7a][reanimated,worklets]'.
+> com.android.ide.common.process.ProcessException: ninja: Entering directory `C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android\.cxx\RelWithDebInfo\6s4k5v70\armeabi-v7a'
+  [0/2] Re-checking globbed directories...
+  ninja: build stopped: .
+  
+  C++ build system [build] failed while executing:
+      @echo off
+      "C:\\Users\\EKEDP\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+        -C ^
+        "C:\\Users\\EKEDP\\Documents\\GitHub\\location-track-lister-mobile-app\\node_modules\\react-native-reanimated\\android\\.cxx\\RelWithDebInfo\\6s4k5v70\\armeabi-v7a" ^
+        reanimated ^
+        worklets
+    from C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android
+  ninja: error: mkdir(src/main/cpp/worklets/CMakeFiles/worklets.dir/C_/Users/EKEDP/Documents/GitHub/location-track-lister-mobile-app): No such file or directory
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+3: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-reanimated:buildCMakeRelWithDebInfo[x86][reanimated,worklets]'.
+> com.android.ide.common.process.ProcessException: ninja: Entering directory `C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android\.cxx\RelWithDebInfo\6s4k5v70\x86'
+  [0/2] Re-checking globbed directories...
+  ninja: build stopped: .
+  
+  C++ build system [build] failed while executing:
+      @echo off
+      "C:\\Users\\EKEDP\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+        -C ^
+        "C:\\Users\\EKEDP\\Documents\\GitHub\\location-track-lister-mobile-app\\node_modules\\react-native-reanimated\\android\\.cxx\\RelWithDebInfo\\6s4k5v70\\x86" ^
+        reanimated ^
+        worklets
+    from C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android
+  ninja: error: mkdir(src/main/cpp/worklets/CMakeFiles/worklets.dir/C_/Users/EKEDP/Documents/GitHub/location-track-lister-mobile-app/node_modules): No such file or directory
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+4: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':react-native-reanimated:buildCMakeRelWithDebInfo[x86_64][reanimated,worklets]'.
+> com.android.ide.common.process.ProcessException: ninja: Entering directory `C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android\.cxx\RelWithDebInfo\6s4k5v70\x86_64'
+  [0/2] Re-checking globbed directories...
+  ninja: build stopped: .
+  
+  C++ build system [build] failed while executing:
+      @echo off
+      "C:\\Users\\EKEDP\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+        -C ^
+        "C:\\Users\\EKEDP\\Documents\\GitHub\\location-track-lister-mobile-app\\node_modules\\react-native-reanimated\\android\\.cxx\\RelWithDebInfo\\6s4k5v70\\x86_64" ^
+        reanimated ^
+        worklets
+    from C:\Users\EKEDP\Documents\GitHub\location-track-lister-mobile-app\node_modules\react-native-reanimated\android
+  ninja: error: mkdir(src/main/cpp/worklets/CMakeFiles/worklets.dir/C_/Users/EKEDP/Documents/GitHub/location-track-lister-mobile-app/node_modules): No such file or directory
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+5: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:compileReleaseKotlin'.
+> Error while evaluating property 'friendPathsSet$kotlin_gradle_plugin_common' of task ':app:compileReleaseKotlin'.
+   > Could not resolve all files for configuration ':app:releaseCompileClasspath'.
+      > Failed to transform kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0) to match attributes {artifactType=android-classes-jar, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.jvm.environment=standard-jvm, org.gradle.jvm.version=8, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-api, org.jetbrains.kotlin.platform.type=jvm}.
+         > Could not download kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0): No cached version available for offline mode
+      > Failed to transform guava-31.1-android.jar (com.google.guava:guava:31.1-android) to match attributes {artifactType=android-classes-jar, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-api}.
+         > Could not download guava-31.1-android.jar (com.google.guava:guava:31.1-android): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+6: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:checkReleaseDuplicateClasses'.
+> Could not resolve all files for configuration ':app:releaseRuntimeClasspath'.
+   > Failed to transform kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0) to match attributes {artifactType=enumerated-runtime-classes, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.jvm.environment=standard-jvm, org.gradle.jvm.version=8, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=jvm}.
+      > Could not download kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0): No cached version available for offline mode
+   > Failed to transform collection-ktx-1.4.2.jar (androidx.collection:collection-ktx:1.4.2) to match attributes {artifactType=enumerated-runtime-classes, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.jvm.environment=standard-jvm, org.gradle.jvm.version=8, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=jvm}.
+      > Could not download collection-ktx-1.4.2.jar (androidx.collection:collection-ktx:1.4.2): No cached version available for offline mode
+   > Failed to transform guava-31.1-android.jar (com.google.guava:guava:31.1-android) to match attributes {artifactType=enumerated-runtime-classes, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download guava-31.1-android.jar (com.google.guava:guava:31.1-android): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+7: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:collectReleaseDependencies'.
+> Could not resolve all files for configuration ':app:releaseRuntimeClasspath'.
+   > Could not download kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0): No cached version available for offline mode
+   > Could not download collection-ktx-1.4.2.jar (androidx.collection:collection-ktx:1.4.2): No cached version available for offline mode
+   > Could not download guava-31.1-android.jar (com.google.guava:guava:31.1-android): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+BUILD FAILED in 8m 58s
